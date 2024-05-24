@@ -40,3 +40,17 @@ jobs:
     
         - name: Install dependencies
           run: pnpm install
+
+        - name: Build Docker image
+          run: docker build . --file Dockerfile --tag arc0t/lanagrafica-fe:latest
+        
+        # https://github.com/mr-smithers-excellent/docker-build-push    
+        - name: Build and push
+          uses: mr-smithers-excellent/docker-build-push@v6
+          with:
+            image: arc0t/lanagrafica-fe
+            registry: docker.io
+            dockerfile: Dockerfile
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+            tags: latest
