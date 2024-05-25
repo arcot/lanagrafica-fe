@@ -13,4 +13,8 @@ COPY package.json /app/package.json
 
 WORKDIR /app
 RUN pnpm install
-RUN pnpm run build
+RUN pnpm run build || { echo 'Build failed'; exit 1; }
+
+# If build succeeds, expose the application port and start the app
+EXPOSE 8080
+CMD [ "node", "index.js" ]
