@@ -1,15 +1,16 @@
-# Stage 1: Build the production-ready React app
-FROM node:20 AS build
-WORKDIR /app
-COPY package.json .
-COPY pnpm-lock.json .
-RUN pnpm install
-COPY . .
-RUN pnpm run build
+# Code from https://pnpm.io/podman
+FROM node:20-slim
 
-# Stage 2: Serve the built app using a lightweight HTTP server
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/nginx.conf
-EXPOSE 443
-CMD ["nginx", "-g", "daemon off;"]
+# corepack is an experimental feature in Node.js v20 which allows
+# installing and managing versions of pnpm, npm, yarn
+RUN corepack enable
+
+VOLUME [ "/pnpm-store", "/app/node_modules" ]
+RUN pnpm config --global set store-dir /pnpm-store
+
+# You may need to copy more files than just package.json in your code
+COPY package.json /app/package.json
+
+WORKDIR /app
+RUN pnpm install
+RUN pnpm run build

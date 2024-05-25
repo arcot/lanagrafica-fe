@@ -1,56 +1,25 @@
 # code from https://github.com/pnpm/action-setup
-
-name: CI workflow
+name: CI/CD
 
 on:
-    - push
-    - pull_request
- 
-jobs:
-    cache-and-install:
-        runs-on: ubuntu-latest
-    
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-    
-        - name: Install Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: 20
-    
-        - uses: pnpm/action-setup@v4
-          name: Install pnpm
-          with:
-            version: 8
-            run_install: false
-    
-        - name: Get pnpm store directory
-          shell: bash
-          run: |
-            echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-    
-        - uses: actions/cache@v4
-          name: Setup pnpm cache
-          with:
-            path: ${{ env.STORE_PATH }}
-            key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-            restore-keys: |
-                ${{ runner.os }}-pnpm-store-
-    
-        - name: Install dependencies
-          run: pnpm install
+  push:
 
-        - name: Build Docker image
-          run: docker build . --file Dockerfile --tag arc0t/lanagrafica-fe:latest
-        
-        # https://github.com/mr-smithers-excellent/docker-build-push    
-        - name: Build and push
-          uses: mr-smithers-excellent/docker-build-push@v6
-          with:
-            image: arc0t/lanagrafica-fe
-            registry: docker.io
-            dockerfile: Dockerfile
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_TOKEN }}
-            tags: latest
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        node-version: [20]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 9
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
+    - name: Install dependencies
+      run: pnpm install
