@@ -1,4 +1,4 @@
-import { Member } from "@/components/members-table";
+import { Member, MemberDTO } from "@/types";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -11,9 +11,23 @@ export function delay(ms: number) {
 }
 
 export function createDateString(day: string, month: string, year: string) {
+  if (!year) return "year cannot be empty";
+
   const paddedDay = day.padStart(2, "0");
   const paddedMonth = month.padStart(2, "0");
-  return `${year}-${paddedMonth}-${paddedDay}`;
+  const paddedYear = year.padStart(2, "0");
+
+  const currWholeYear = new Date().getFullYear();
+  const currCentury = Number(String(currWholeYear).slice(0, 2));
+  const currYear = Number(String(currWholeYear).slice(2));
+  let newYear: string;
+  if (0 <= Number(year) && Number(year) <= currYear) {
+    newYear = `${currCentury}${paddedYear}`;
+  } else {
+    newYear = `${currCentury - 1}${paddedYear}`;
+  }
+
+  return `${newYear}-${paddedMonth}-${paddedDay}`;
 }
 
 export function parseDay(dateISO: string) {
@@ -23,20 +37,12 @@ export function parseMonth(dateISO: string) {
   return dateISO.split("-")[1];
 }
 export function parseYear(dateISO: string) {
-  return dateISO.split("-")[0];
+  return dateISO.split("-")[0].slice(2);
 }
 
 export function isValidISODate(value: string) {
   const date = new Date(value);
   return !isNaN(date.getTime()) && value === date.toISOString().slice(0, 10);
-}
-
-export function isWithinRange(value: string) {
-  const maxAge = 120;
-  const today = new Date();
-  const birthDate = new Date(value);
-  const ageDiff = today.getFullYear() - birthDate.getFullYear();
-  return ageDiff >= 0 && ageDiff <= maxAge;
 }
 
 export function isAdult(value: string) {
@@ -56,7 +62,7 @@ export function isAdult(value: string) {
   if (dayDiff <= 0) return false;
 }
 
-export function getCustomDate(value: string) {
+export function getCustomDate(value: string | void) {
   if (!value) return "";
 
   const date = new Date(value);
@@ -80,7 +86,7 @@ export function fromSnakeToCamelCase(arr: object[]) {
   });
 }
 
-export function fromCamelToSnakeCase(obj: object) {
+export function fromCamelToSnakeCase(obj: Member) {
   return Object.fromEntries(
     Object.entries(obj).map(([key, value]) => {
       const newKey = key
@@ -89,7 +95,7 @@ export function fromCamelToSnakeCase(obj: object) {
         .join("_");
       return [newKey, value];
     }),
-  );
+  ) as MemberDTO;
 }
 
 export function extendWithStatus(data: Member[]) {
@@ -140,4 +146,17 @@ export function getDateMonthsLater(count: number) {
   const date = new Date();
   date.setMonth(date.getMonth() + count);
   return date.toISOString().split("T")[0];
+}
+
+export function serializeForUpdate<T extends Member>(
+  row: T,
+  isActive: boolean,
+): MemberDTO {
+  const updatedRow: Record<string, unknown> = { isActive: isActive };
+
+  for (let key in row) {
+    updatedRow[key] = row[key] || null;
+  }
+
+  return fromCamelToSnakeCase(updatedRow as Member);
 }
