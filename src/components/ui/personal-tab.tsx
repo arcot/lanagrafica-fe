@@ -7,13 +7,13 @@ import { DateField } from "./date-field";
 import { InputField } from "./input-field";
 import { SelectField } from "./select-field";
 import { useState } from "react";
-import { Member } from "@/types";
+import { MemberExt } from "@/types/types";
 import { UseFormReturn } from "react-hook-form";
 import { TabsContent } from "@radix-ui/react-tabs";
 
 type PersonalTabProps = {
-  form: UseFormReturn<Member>;
-  row: Member;
+  form: UseFormReturn;
+  row: MemberExt;
   day: string;
   month: string;
   year: string;
@@ -54,7 +54,7 @@ export function PersonalTab({
         <DateField
           form={form}
           label={t("newMember.dateFieldLabel")}
-          name="birthDate"
+          name="birth_date"
           day={day}
           month={month}
           year={year}
@@ -75,23 +75,23 @@ export function PersonalTab({
         />
         <Combobox
           form={form}
-          name="birthPlace"
+          name="birth_place"
           label={t("newMember.cityFieldLabel")}
           data={[i18n.language === "it" ? "__Altro__" : "__Other__", ...cities]}
           search={citySearch}
           setSearch={setCitySearch}
           value={
             isItaly
-              ? cities.includes(row.birthPlace)
-                ? row.birthPlace
+              ? cities.includes(row.birth_place || "")
+                ? row.birth_place || ""
                 : ""
-              : country
+              : country || ""
           }
           disabled={!isItaly}
         />
         <SelectField
           form={form}
-          name="docType"
+          name="doc_type"
           label={t("newMember.docTypeFieldLabel")}
           data={documents.map((entry) =>
             i18n.language === "it" ? entry.it : entry.en,
@@ -100,7 +100,7 @@ export function PersonalTab({
         <InputField
           form={form}
           label={t("newMember.docIdFieldLabel")}
-          name="docId"
+          name="doc_id"
         />
         <InputField
           form={form}

@@ -1,16 +1,22 @@
 import { supabase } from "./supabase";
 import { extendDate, genCardNumber } from "@/lib/utils";
-import { MemberDTO } from "@/types";
+import { MemberInsert, MemberUpdate } from "@/types/types";
 
-export async function renewMember(
-  id: number,
-  expirationDate: string,
-): Promise<MemberDTO | null> {
+function serialize<T extends MemberUpdate | MemberInsert>(data: T) {
+  const serialized = Object.entries(data).map((item) => {
+    item[1] = item[1] === "" ? null : item[1];
+    return item;
+  });
+
+  return Object.fromEntries(serialized) as T;
+}
+
+export async function renewMember(id: number, expirationDate: string) {
   const cardNumber = genCardNumber();
-  const nextExpiration = extendDate(new Date(expirationDate));
+  const nextExpiration = extendDate(expirationDate);
 
-  const { data, error } = await supabase
-    .from("member")
+  const { error } = await supabase
+    .from("members")
     .update({
       card_number: String(cardNumber),
       expiration_date: nextExpiration,
@@ -19,26 +25,19 @@ export async function renewMember(
     .eq("id", id);
 
   if (error) throw error;
-
-  return data;
 }
 
-export async function updateMember(
-  id: number,
-  details: MemberDTO,
-): Promise<MemberDTO | null> {
-  const { data, error } = await supabase
-    .from("member")
-    .update(details)
+export async function updateMember(id: number, details: MemberUpdate) {
+  const { error } = await supabase
+    .from("members")
+    .update(serialize(details))
     .eq("id", id);
 
   if (error) throw error;
-
-  return data;
 }
 
-export async function insertMember(details: MemberDTO) {
-  const { error } = await supabase.from("member").insert(details);
+export async function insertMember(details: MemberInsert) {
+  const { error } = await supabase.from("members").insert(serialize(details));
 
   if (error) throw error;
 }
@@ -48,25 +47,25 @@ export async function searchMember(
   pageStart: number,
   pageEnd: number,
 ) {
-  let data, count, error;
+  let data, error;
   if (debouncedSearch) {
     const searchWords = debouncedSearch.trim().split(/\s+/).filter(Boolean);
     const searchParam = searchWords.join(" & ");
-    ({ data, count, error } = await supabase
-      .from("member")
-      .select("*", { count: "exact" })
+    ({ data, error } = await supabase
+      .from("members")
+      .select("*")
       .order("id", { ascending: true })
       .textSearch("name_surname", searchParam)
       .range(pageStart, pageEnd));
   } else {
-    ({ data, count, error } = await supabase
-      .from("member")
-      .select("*", { count: "exact" })
+    ({ data, error } = await supabase
+      .from("members")
+      .select("*")
       .order("id", { ascending: true })
       .range(pageStart, pageEnd));
   }
 
   if (error) throw error;
 
-  return { data, count };
+  return data;
 }

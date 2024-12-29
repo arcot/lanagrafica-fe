@@ -11,10 +11,10 @@ import {
   isAdult,
   isValidISODate,
   hasExpired,
-  serializeForUpdate,
+  hasBeenSuspended,
 } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Form } from "@/components/ui/form";
 import {
   Sheet,
@@ -32,7 +32,7 @@ import {
 import { StatusBadge } from "./status-badge";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { UpdateMutation } from "@/hooks/use-table-mutations";
-import { Member } from "@/types";
+import { MemberExt } from "@/types/types";
 import { PersonalTab } from "./personal-tab";
 import { MembershipTab } from "./membership-tab";
 import { NoteTab } from "./note-tab";
@@ -43,7 +43,7 @@ export function MemberDetails({
   children,
   variant = "personal",
 }: {
-  row: Member;
+  row: MemberExt;
   updateMutation: UpdateMutation;
   children: React.ReactNode;
   variant?: "personal" | "membership" | "note";
@@ -51,61 +51,89 @@ export function MemberDetails({
   const { t } = useTranslation();
 
   const [open, setOpen] = useState(false);
-  const [day, setDay] = useState(parseDay(row.birthDate));
-  const [month, setMonth] = useState(parseMonth(row.birthDate));
-  const [year, setYear] = useState(parseYear(row.birthDate));
+  const [day, setDay] = useState(parseDay(row.birth_date));
+  const [month, setMonth] = useState(parseMonth(row.birth_date));
+  const [year, setYear] = useState(parseYear(row.birth_date));
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
     surname: z.string().min(1, { message: t("validation.required") }),
-    birthDate: z
+    birth_date: z
       .string()
       .min(1, { message: t("validation.required") })
       .refine(isValidISODate, { message: t("validation.wrongDate") })
       .refine(isAdult, { message: t("validation.notAdult") }),
-    birthPlace: z.string().min(1, { message: t("validation.required") }),
+    birth_place: z.string().min(1, { message: t("validation.required") }),
     country: z.string().min(1, { message: t("validation.required") }),
-    docType: z.string().min(1, { message: t("validation.required") }),
-    docId: z.string().min(1, { message: t("validation.required") }),
+    doc_type: z.string().min(1, { message: t("validation.required") }),
+    doc_id: z.string().min(1, { message: t("validation.required") }),
     email: z.string(),
     measure: z.string().refine((measure) => measure || !isSuspended, {
       message: t("validation.required"),
     }),
     note: z.string(),
-    suspendedTill: z.string(),
-    expirationDate: z.string(),
+    suspended_till: z.string(),
+    expiration_date: z.string(),
   });
 
-  const form = useForm<Member>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: row.name,
-      surname: row.surname,
-      birthDate: createDateString(day, month, year),
-      birthPlace: row.birthPlace,
-      country: row.country,
-      docType: row.docType,
-      docId: row.docId,
+  type FormData = z.infer<typeof formSchema>;
+
+  const rowValues = useMemo(
+    () => ({
+      name: row.name || "",
+      surname: row.surname || "",
+      birth_date: createDateString(
+        parseDay(row.birth_date),
+        parseMonth(row.birth_date),
+        parseYear(row.birth_date),
+      ),
+      birth_place: row.birth_date,
+      country: row.country || "",
+      doc_type: row.doc_type || "",
+      doc_id: row.doc_id || "",
       email: row.email || "",
       measure: row.measure || "",
       note: row.note || "",
-      suspendedTill: row.suspendedTill || "",
-      expirationDate: row.expirationDate || "",
-    },
-  });
+      suspended_till: row.suspended_till || "",
+      expiration_date: row.expiration_date || "",
+    }),
+    [row],
+  );
 
-  const { isDirty } = form.formState;
-  const isSuspended: boolean = Boolean(form.watch("suspendedTill"));
-  const isExpired = hasExpired(new Date(form.watch("expirationDate")));
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: rowValues,
+  });
+  const { isDirty, dirtyFields } = form.formState;
+  const isSuspended = hasBeenSuspended(
+    new Date(form.watch("suspended_till") || ""),
+  );
+  const isExpired = hasExpired(new Date(form.watch("expiration_date") || ""));
   const isActive = !isSuspended && !isExpired;
   const isMobile = useWindowSize();
 
-  async function onSubmit(member: Member) {
-    const serializedMember = serializeForUpdate(member, isActive);
+  // Re-initialize form when row changes
+  useEffect(() => {
+    form.reset(rowValues);
+  }, [row, form, rowValues]);
+
+  useEffect(() => {
+    if (isDirty && !open) {
+      form.reset(rowValues);
+    }
+  }, [open, form, rowValues, isDirty]);
+
+  async function onSubmit(data: FormData) {
+    const modifiedFields = Object.keys(dirtyFields) as Array<keyof FormData>;
+    const modifiedData = modifiedFields.reduce((acc, field) => {
+      acc[field] = data[field];
+      return acc;
+    }, {} as Partial<FormData>);
+
     await updateMutation.mutate({
       id: row.id,
-      details: serializedMember,
-      name: row.name,
+      details: { ...modifiedData, is_active: isActive },
+      name: row.name || "",
     });
     setOpen(false);
   }
@@ -139,7 +167,7 @@ export function MemberDetails({
 
         <div className="flex justify-center">
           <Tabs defaultValue={variant} className="w-full space-y-6">
-            <TabsList>
+            <TabsList className="gap-1">
               <TabsTrigger value="personal">
                 {t("memberDetails.personalTab")}
               </TabsTrigger>
@@ -153,6 +181,7 @@ export function MemberDetails({
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <PersonalTab
+                  // @ts-expect-error - FormData type cannot be exported
                   form={form}
                   day={day}
                   month={month}
@@ -163,12 +192,16 @@ export function MemberDetails({
                   row={row}
                 />
                 <MembershipTab
+                  // @ts-expect-error - FormData type cannot be exported
                   form={form}
                   row={row}
                   isExpired={isExpired}
                   isSuspended={isSuspended}
                 />
-                <NoteTab form={form} />
+                <NoteTab
+                  // @ts-expect-error - FormData type cannot be exported
+                  form={form}
+                />
                 <Button
                   disabled={!isDirty || form.formState.isSubmitting}
                   type="submit"

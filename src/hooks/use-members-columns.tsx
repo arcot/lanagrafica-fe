@@ -1,27 +1,22 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useMembersMutations } from "./use-table-mutations";
 import { createColumnHelper } from "@tanstack/react-table";
 import { getCustomDate, hasExpired } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ActionButtons } from "@/components/ui/action-buttons";
-import { Member } from "@/types";
+import { MemberExt } from "@/types/types";
 
-interface Row {
-  original: Member;
-}
-
-const columnHelper = createColumnHelper<Member>();
+const columnHelper = createColumnHelper<MemberExt>();
 
 export function useMembersColumns() {
   const { t } = useTranslation();
-  const { updateMutation, renewMutation } = useMembersMutations();
 
   return useMemo(
     () => [
       columnHelper.accessor((row) => `${row.name} ${row.surname}`, {
         id: "fullName",
         meta: t("membersTable.name"),
+        enableHiding: false,
         cell: (info) => info.getValue(),
         header: () => <span>{t("membersTable.name")}</span>,
       }),
@@ -30,12 +25,12 @@ export function useMembersColumns() {
         cell: (info) => info.getValue(),
         header: () => <span>{t("membersTable.email")}</span>,
       }),
-      columnHelper.accessor("birthDate", {
+      columnHelper.accessor("birth_date", {
         meta: t("membersTable.birthDate"),
         cell: (info) => getCustomDate(info.getValue()),
         header: () => <span>{t("membersTable.birthDate")}</span>,
       }),
-      columnHelper.accessor("cardNumber", {
+      columnHelper.accessor("card_number", {
         meta: t("membersTable.cardNumber"),
         cell: (info) => {
           const result = info.getValue();
@@ -43,10 +38,10 @@ export function useMembersColumns() {
         },
         header: () => <span>{t("membersTable.cardNumber")}</span>,
       }),
-      columnHelper.accessor("expirationDate", {
+      columnHelper.accessor("expiration_date", {
         meta: t("membersTable.expirationDate"),
         cell: (info) => {
-          const result = getCustomDate(info.getValue());
+          const result = getCustomDate(info.getValue() || "");
           return result ? result : "-";
         },
         header: () => <span>{t("membersTable.expirationDate")}</span>,
@@ -60,10 +55,10 @@ export function useMembersColumns() {
         header: () => <span>{t("membersTable.status")}</span>,
         filterFn: "equals",
       }),
-      columnHelper.accessor("suspendedTill", {
+      columnHelper.accessor("suspended_till", {
         meta: t("membersTable.suspendedTill"),
         cell: (info) => {
-          const result = getCustomDate(info.getValue());
+          const result = getCustomDate(info.getValue() || "");
           return result ? result : "-";
         },
         header: () => <span>{t("membersTable.suspendedTill")}</span>,
@@ -72,25 +67,25 @@ export function useMembersColumns() {
           return cellValue ? !hasExpired(new Date(cellValue as string)) : false;
         },
       }),
-      columnHelper.accessor("isActive", {
+      columnHelper.accessor("is_active", {
         meta: t("membersTable.isActive"),
         header: () => <span>{t("membersTable.isActive")}</span>,
         filterFn: "equals",
       }),
-      columnHelper.accessor("isDeleted", {
+      columnHelper.accessor("is_deleted", {
         meta: t("membersTable.isDeleted"),
         header: () => <span>{t("membersTable.isDeleted")}</span>,
         filterFn: "equals",
       }),
-      {
+      columnHelper.display({
         meta: t("membersTable.actions"),
         id: "actions",
         header: () => <span className="ml-3">{t("membersTable.actions")}</span>,
-        cell: ({ row }: { row: Row }) => {
-          return <ActionButtons row={row.original} />;
+        cell: (info) => {
+          return <ActionButtons row={info.row.original} />;
         },
-      },
+      }),
     ],
-    [t, renewMutation, updateMutation],
+    [t],
   );
 }

@@ -9,17 +9,16 @@ import { useTranslation } from "react-i18next";
 import { Checkbox } from "./checkbox";
 import { Label } from "./label";
 import { Table, VisibilityState } from "@tanstack/react-table";
-import { Member } from "@/types";
+import { MemberExt } from "@/types/types";
 
 type HideFieldsPopoverProps = {
-  table: Table<Member>;
+  table: Table<MemberExt>;
   columnVisibility: VisibilityState;
   setColumnVisibility: React.Dispatch<React.SetStateAction<VisibilityState>>;
 };
 
 export function HideFieldsPopover({
   table,
-  columnVisibility,
   setColumnVisibility,
 }: HideFieldsPopoverProps) {
   const { t } = useTranslation();
@@ -34,7 +33,7 @@ export function HideFieldsPopover({
       </PopoverTrigger>
       <PopoverContent>
         {table.getAllColumns().map((col, index, self) => {
-          if (col.id === "isActive" || col.id === "isDeleted") return null;
+          if (col.id === "is_active" || col.id === "is_deleted") return null;
 
           return (
             <div
@@ -43,9 +42,8 @@ export function HideFieldsPopover({
             >
               <Checkbox
                 id={col.id}
-                checked={
-                  columnVisibility[col.id as keyof typeof columnVisibility]
-                }
+                checked={col.getIsVisible()}
+                disabled={!col.getCanHide()}
                 onCheckedChange={(checked) => {
                   setColumnVisibility((prev: VisibilityState) => ({
                     ...prev,

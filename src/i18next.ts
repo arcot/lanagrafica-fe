@@ -33,6 +33,7 @@ i18n
             username: "Username",
             password: "Password",
             submit: "Sign in",
+            defaultCredentials: "Use default credentials",
           },
           newMember: {
             trigger: "Add new member",
@@ -92,8 +93,6 @@ i18n
             isActive: "Is Active",
             isDeleted: "Is Deleted",
             actions: "Actions",
-            renewSuccess: "Renewal successful for {{name}}",
-            renewError: "Renewal failed for {{name}}",
             updateSuccess: "Update successful for {{name}}",
             updateError: "Update failed for {{name}}",
             noResults: "No results.",
@@ -156,6 +155,7 @@ i18n
             username: "Nome utente",
             password: "Password",
             submit: "Accedi",
+            defaultCredentials: "Usa le credenziali predefinite",
           },
           newMember: {
             trigger: "Aggiungi nuovo membro",
@@ -215,8 +215,6 @@ i18n
             isDeleted: "È Eliminato",
             all: "tutti",
             actions: "Azioni",
-            renewSuccess: "Rinnovo riuscito per {{name}}",
-            renewError: "Rinnovo fallito per {{name}}",
             updateSuccess: "Aggiornamento riuscito per {{name}}",
             updateError: "Aggiornamento fallito per {{name}}",
             noResults: "Nessun risultato.",
