@@ -11,6 +11,7 @@ import { Members } from "./pages/members";
 import { Toaster } from "./ui/sonner";
 import { Cards } from "./pages/cards";
 import { ProtectedRoute } from "./providers/protected-route";
+import { AuthProvider } from "./providers/auth-provider";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -45,11 +46,11 @@ const router = createBrowserRouter(
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <Background />
       <RouterProvider router={router} />
       <Toaster position="bottom-center" />
-    </>
+    </AuthProvider>
   );
 }
 

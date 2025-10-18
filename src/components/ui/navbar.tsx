@@ -8,13 +8,12 @@ import { Logo } from "./logo";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
-  const { session } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const { t } = useTranslation();
-  const isAdmin = session?.user?.email === "admin@example.com";
 
   return (
     <div className="min-h-20 absolute border-neutral-6 flex w-full justify-between p-3 items-center">
-      {session ? (
+      {isAuthenticated ? (
         <NavLink to={"/"}>
           <Logo />
         </NavLink>
@@ -23,7 +22,7 @@ export function Navbar() {
       )}
 
       <nav>
-        {session && (
+        {isAuthenticated && (
           <ul className="flex gap-3">
             <li>
               <NavLink to={"/"} tabIndex={-1}>
@@ -61,7 +60,7 @@ export function Navbar() {
         )}
       </nav>
 
-      {session ? <AccountDetails /> : <ModeToggle />}
+      {isAuthenticated ? <AccountDetails /> : <ModeToggle />}
     </div>
   );
 }

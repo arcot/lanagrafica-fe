@@ -13,16 +13,19 @@ export function ProtectedRoute({
   adminOnly = false,
   publicOnly = false,
 }: ProtectedRouteProps) {
-  const { session } = useAuth();
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
   const location = useLocation();
-  const isAdmin = session?.user?.email === "admin@example.com";
 
-  if (publicOnly && session) {
+  if (isLoading) {
+    return null; // or a loading spinner
+  }
+
+  if (publicOnly && isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
   if (!publicOnly) {
-    if (!session) {
+    if (!isAuthenticated) {
       return <Navigate to="/login" replace state={{ from: location }} />;
     }
 

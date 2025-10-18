@@ -1,17 +1,23 @@
-import { supabase } from "@/api/supabase";
-import { Session, User } from "@supabase/supabase-js";
-import { ReactNode, createContext, useEffect, useState } from "react";
+import { useAuth0, User } from "@auth0/auth0-react";
+import { ReactNode, createContext, useContext, useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  signIn: (username: string, password: string) => Promise<void>;
+  user: User | undefined;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  isAdmin: boolean;
+  getAccessToken: () => Promise<string>;
+  signIn: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
+  user: undefined,
+  isAuthenticated: false,
+  isLoading: true,
+  isAdmin: false,
+  getAccessToken: async () => '',
   signIn: async () => {},
   signOut: async () => {},
 });
@@ -21,54 +27,81 @@ interface Node {
 }
 
 export const AuthProvider = ({ children }: Node) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    user,
+    isAuthenticated,
+    isLoading,
+    loginWithRedirect,
+    logout,
+    getAccessTokenSilently,
+  } = useAuth0();
+  
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    const checkAdminRole = async () => {
+      if (isAuthenticated && user) {
+        try {
+          const token = await getAccessTokenSilently();
+          const decodedToken = jwtDecode(token) as { permissions?: string[] };
+          const permissions = decodedToken.permissions || [];
+          setIsAdmin(Array.isArray(permissions) && permissions.includes('Admin'));
+        } catch (error) {
+          console.error('Error checking admin role:', error);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminRole();
+  }, [isAuthenticated, user, getAccessTokenSilently]);
+
+  const signIn = async () => {
+    await loginWithRedirect({
+      authorizationParams: {
+        redirect_uri: window.location.origin,
+      },
     });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signIn = async (username: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: username,
-      password,
-    });
-
-    if (error) throw error;
-    setUser(data.user);
-    setSession(data.session);
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-
-    if (error) throw error;
-    setUser(null);
-    setSession(null);
+    logout({
+      logoutParams: {
+        returnTo: `${window.location.origin}/login`,
+      },
+    });
   };
 
-  if (loading) {
+  const getAccessToken = async () => {
+    if (!isAuthenticated) throw new Error('User not authenticated');
+    return await getAccessTokenSilently();
+  };
+
+  if (isLoading) {
     return null;
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, signIn, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      isLoading, 
+      isAdmin, 
+      getAccessToken, 
+      signIn, 
+      signOut 
+    }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
