@@ -1,6 +1,5 @@
 import { restClient } from "./restClient";
-import { extendDate, genCardNumber } from "@/lib/utils";
-import { MemberInsert, MemberUpdate, Member, ApiResponse, ApiSearchRequest } from "@/types/types";
+import { Member, MemberInsert, MemberUpdate, ApiResponse, ApiSearchRequest } from "@/types/types";
 
 function serialize<T extends MemberUpdate | MemberInsert>(data: T) {
   const serialized = Object.entries(data).map((item) => {
@@ -12,18 +11,9 @@ function serialize<T extends MemberUpdate | MemberInsert>(data: T) {
 }
 
 export async function renewMember(id: string, expirationDate: string, token: string) {
-  const cardNumber = genCardNumber();
-  const nextExpiration = extendDate(expirationDate);
-
-  const updateData: MemberUpdate = {
-    cardNumber: String(cardNumber),
-    expirationDate: nextExpiration,
-    isActive: true,
-  };
-
   const response = await restClient.put<ApiResponse<Member>>(
-    `/member/${id}`,
-    serialize(updateData),
+    `/member/renew-card-member/${id}`,
+    {},
     token
   );
 
@@ -36,8 +26,8 @@ export async function renewMember(id: string, expirationDate: string, token: str
 
 export async function updateMember(id: string, details: MemberUpdate, token: string) {
   const response = await restClient.put<ApiResponse<Member>>(
-    `/member/${id}`,
-    serialize(details),
+    `/member/`,
+    { ...serialize(details), id },
     token
   );
 
@@ -50,7 +40,7 @@ export async function updateMember(id: string, details: MemberUpdate, token: str
 
 export async function insertMember(details: MemberInsert, token: string) {
   const response = await restClient.post<ApiResponse<Member>>(
-    `/member`,
+    `/member/`,
     serialize(details),
     token
   );
@@ -217,9 +207,16 @@ export async function getDeletedMembers(pageNumber: number, token: string): Prom
   return [] as Member[];
 }
 
-export async function deleteMember(id: string, token: string): Promise<void> {
-  const response = await restClient.delete<ApiResponse>(
-    `/member/soft-delete/${id}`,
+export async function deleteMember(member: Member, token: string): Promise<void> {
+  const response = await restClient.put<ApiResponse>(
+    `/member/soft-delete`,
+    {
+      id: member.id,
+      name: member.name,
+      surname: member.surname,
+      birthDate: member.birthDate,
+      docId: member.docId,
+    },
     token
   );
 
