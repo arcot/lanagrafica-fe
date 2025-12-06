@@ -82,8 +82,8 @@ export function PersonalTab({
           setSearch={setCitySearch}
           value={
             isItaly
-              ? cities.includes(row.birth_place || "")
-                ? row.birth_place || ""
+              ? cities.includes(row.birthPlace || "")
+                ? row.birthPlace || ""
                 : ""
               : country || ""
           }

@@ -25,12 +25,12 @@ export function useMembersColumns() {
         cell: (info) => info.getValue(),
         header: () => <span>{t("membersTable.email")}</span>,
       }),
-      columnHelper.accessor("birth_date", {
+      columnHelper.accessor("birthDate", {
         meta: t("membersTable.birthDate"),
         cell: (info) => getCustomDate(info.getValue()),
         header: () => <span>{t("membersTable.birthDate")}</span>,
       }),
-      columnHelper.accessor("card_number", {
+      columnHelper.accessor("cardNumber", {
         meta: t("membersTable.cardNumber"),
         cell: (info) => {
           const result = info.getValue();
@@ -38,7 +38,7 @@ export function useMembersColumns() {
         },
         header: () => <span>{t("membersTable.cardNumber")}</span>,
       }),
-      columnHelper.accessor("expiration_date", {
+      columnHelper.accessor("expirationDate", {
         meta: t("membersTable.expirationDate"),
         cell: (info) => {
           const result = getCustomDate(info.getValue() || "");
@@ -55,7 +55,7 @@ export function useMembersColumns() {
         header: () => <span>{t("membersTable.status")}</span>,
         filterFn: "equals",
       }),
-      columnHelper.accessor("suspended_till", {
+      columnHelper.accessor("suspendedTill", {
         meta: t("membersTable.suspendedTill"),
         cell: (info) => {
           const result = getCustomDate(info.getValue() || "");
@@ -67,12 +67,12 @@ export function useMembersColumns() {
           return cellValue ? !hasExpired(new Date(cellValue as string)) : false;
         },
       }),
-      columnHelper.accessor("is_active", {
+      columnHelper.accessor("isActive", {
         meta: t("membersTable.isActive"),
         header: () => <span>{t("membersTable.isActive")}</span>,
         filterFn: "equals",
       }),
-      columnHelper.accessor("is_deleted", {
+      columnHelper.accessor("isDeleted", {
         meta: t("membersTable.isDeleted"),
         header: () => <span>{t("membersTable.isDeleted")}</span>,
         filterFn: "equals",

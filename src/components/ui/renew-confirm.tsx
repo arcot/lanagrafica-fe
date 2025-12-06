@@ -23,7 +23,7 @@ import { RenewMutation } from "@/hooks/use-table-mutations";
 type RenewConfirmProps = {
   children: ReactNode;
   isOpenForbidden: boolean;
-  id: number;
+  id: string;
   expirationDate: string;
   name: string;
   renewMutation: RenewMutation;

@@ -3,13 +3,14 @@ import { MemberInsert, MemberUpdate } from "@/types/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useAuth } from "@/components/providers/auth-provider";
 
 export type RenewMutation = {
-  mutate: (args: { id: number; expirationDate: string; name: string }) => void;
+  mutate: (args: { id: string; expirationDate: string; name: string }) => void;
 };
 
 export type UpdateMutation = {
-  mutate: (args: { id: number; details: MemberUpdate; name: string }) => void;
+  mutate: (args: { id: string; details: MemberUpdate; name: string }) => void;
 };
 
 export type InsertMutation = {
@@ -19,13 +20,17 @@ export type InsertMutation = {
 export function useMembersMutations() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const { getAccessToken } = useAuth();
 
   const renewMutation = useMutation({
-    mutationFn: (variables: {
-      id: number;
+    mutationFn: async (variables: {
+      id: string;
       expirationDate: string;
       name: string;
-    }) => renewMember(variables.id, variables.expirationDate),
+    }) => {
+      const token = await getAccessToken();
+      return renewMember(variables.id, variables.expirationDate, token);
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["members"] });
       toast.success(t("membersTable.updateSuccess", { name: variables.name }));
@@ -41,11 +46,14 @@ export function useMembersMutations() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (variables: {
-      id: number;
+    mutationFn: async (variables: {
+      id: string;
       details: MemberUpdate;
       name: string;
-    }) => updateMember(variables.id, variables.details),
+    }) => {
+      const token = await getAccessToken();
+      return updateMember(variables.id, variables.details, token);
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["members"] });
       toast.success(t("membersTable.updateSuccess", { name: variables.name }));
@@ -61,8 +69,10 @@ export function useMembersMutations() {
   });
 
   const insertMutation = useMutation({
-    mutationFn: (variables: { details: MemberInsert; name: string }) =>
-      insertMember(variables.details),
+    mutationFn: async (variables: { details: MemberInsert; name: string }) => {
+      const token = await getAccessToken();
+      return insertMember(variables.details, token);
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["members"] });
       toast.success(t("newMember.insertSuccess", { name: variables.name }));

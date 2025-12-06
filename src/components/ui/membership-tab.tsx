@@ -43,7 +43,7 @@ export function MembershipTab({
               <FormControl>
                 <Input
                   disabled={true}
-                  value={getCustomDate(row.registration_date || "")}
+                  value={getCustomDate(row.registrationDate || "")}
                 />
               </FormControl>
             </FormItem>

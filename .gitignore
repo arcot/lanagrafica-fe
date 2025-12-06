@@ -13,7 +13,7 @@ dist-ssr
 *.local
 .env.local
 package-lock.json
-CLAUDE.md
+
 
 # Editor directories and files
 .vscode/*
@@ -35,3 +35,7 @@ todo.md
 /test-exmples
 
 /playwright/.auth
+
+# Claude
+CLAUDE.md
+SESSION_PROGRESS.md

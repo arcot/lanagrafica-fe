@@ -12,5 +12,17 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+    headers: {
+      // Allow Auth0 frames for authentication
+      'Content-Security-Policy': "frame-src 'self' https://*.auth0.com; object-src 'none';"
+    },
+    proxy: {
+      // Proxy API requests to local API Gateway in development
+      '/api': {
+        target: 'http://localhost:8765',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
 });

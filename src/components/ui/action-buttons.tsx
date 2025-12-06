@@ -30,7 +30,7 @@ export function ActionButtons({ row }: ActionButtonsProps) {
         isOpenForbidden={isRenewForbidden}
         id={row.id}
         name={`${row.name} ${row.surname}`}
-        expirationDate={row.expiration_date || ""}
+        expirationDate={row.expirationDate || ""}
         renewMutation={renewMutation}
       >
         <Button size="icon" variant="ghost" disabled={isRenewForbidden}>

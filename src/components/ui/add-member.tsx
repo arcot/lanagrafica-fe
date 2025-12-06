@@ -16,8 +16,6 @@ import cities from "@/assets/cities.json";
 import documents from "@/assets/documents.json";
 import {
   genCardNumber,
-  getExpirationDate,
-  getRegistrationDate,
   isAdult,
   isValidISODate,
 } from "@/lib/utils";
@@ -78,13 +76,17 @@ export function AddMember({
   const isItaly = country === "Italy";
 
   function toInsert(data: FormData): MemberInsert {
-    const updateFields = {
-      ...data,
-      registration_date: getRegistrationDate(),
-      expiration_date: getExpirationDate(),
-      card_number: genCardNumber(),
-      is_active: true,
-      is_deleted: false,
+    const updateFields: MemberInsert = {
+      name: data.name,
+      surname: data.surname,
+      birthDate: data.birth_date,
+      birthPlace: data.birth_place,
+      country: data.country,
+      docType: data.doc_type,
+      docId: data.doc_id,
+      email: data.email,
+      province: "Roma", // Default province - should be made configurable
+      cardNumber: genCardNumber(),
     };
 
     return updateFields;

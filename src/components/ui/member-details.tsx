@@ -51,9 +51,9 @@ export function MemberDetails({
   const { t } = useTranslation();
 
   const [open, setOpen] = useState(false);
-  const [day, setDay] = useState(parseDay(row.birth_date));
-  const [month, setMonth] = useState(parseMonth(row.birth_date));
-  const [year, setYear] = useState(parseYear(row.birth_date));
+  const [day, setDay] = useState(parseDay(row.birthDate));
+  const [month, setMonth] = useState(parseMonth(row.birthDate));
+  const [year, setYear] = useState(parseYear(row.birthDate));
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
@@ -83,19 +83,19 @@ export function MemberDetails({
       name: row.name || "",
       surname: row.surname || "",
       birth_date: createDateString(
-        parseDay(row.birth_date),
-        parseMonth(row.birth_date),
-        parseYear(row.birth_date),
+        parseDay(row.birthDate),
+        parseMonth(row.birthDate),
+        parseYear(row.birthDate),
       ),
-      birth_place: row.birth_date,
+      birth_place: row.birthPlace || "",
       country: row.country || "",
-      doc_type: row.doc_type || "",
-      doc_id: row.doc_id || "",
+      doc_type: row.docType || "",
+      doc_id: row.docId || "",
       email: row.email || "",
       measure: row.measure || "",
       note: row.note || "",
-      suspended_till: row.suspended_till || "",
-      expiration_date: row.expiration_date || "",
+      suspended_till: row.suspendedTill || "",
+      expiration_date: row.expirationDate || "",
     }),
     [row],
   );
@@ -132,7 +132,7 @@ export function MemberDetails({
 
     await updateMutation.mutate({
       id: row.id,
-      details: { ...modifiedData, is_active: isActive },
+      details: { ...modifiedData, isActive: isActive },
       name: row.name || "",
     });
     setOpen(false);
