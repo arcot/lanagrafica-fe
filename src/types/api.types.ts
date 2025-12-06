@@ -70,9 +70,8 @@ export interface ApiResponse<T = any> {
 export interface ApiSearchRequest {
   name?: string;
   surname?: string;
-  birthDate?: string;
-  pageNumber?: number;
-  pageSize?: number;
+  birthDate?: string | null;
+  pageNumber: number;
 }
 
 // Member status types (derived from data)

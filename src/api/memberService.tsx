@@ -61,11 +61,13 @@ export async function searchMember(
   if (debouncedSearch) {
     // Use search endpoint for text search
     const searchWords = debouncedSearch.trim().split(/\s+/).filter(Boolean);
-    const searchRequest: ApiSearchRequest = {
-      name: searchWords[0],
-      surname: searchWords[1] || searchWords[0], // Use first word for both if only one word
+
+    // Backend expects: { name, surname, birthDate, pageNumber }
+    const searchRequest = {
+      name: searchWords[0] || "",
+      surname: searchWords[1] || "", // Empty if single word (triggers OR logic in backend)
+      birthDate: null, // Optional - not supported in single search bar
       pageNumber,
-      pageSize,
     };
 
     const response = await restClient.post<ApiResponse<Member[]>>(
