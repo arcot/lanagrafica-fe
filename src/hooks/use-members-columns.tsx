@@ -67,16 +67,6 @@ export function useMembersColumns() {
           return cellValue ? !hasExpired(new Date(cellValue as string)) : false;
         },
       }),
-      columnHelper.accessor("isActive", {
-        meta: t("membersTable.isActive"),
-        header: () => <span>{t("membersTable.isActive")}</span>,
-        filterFn: "equals",
-      }),
-      columnHelper.accessor("isDeleted", {
-        meta: t("membersTable.isDeleted"),
-        header: () => <span>{t("membersTable.isDeleted")}</span>,
-        filterFn: "equals",
-      }),
       columnHelper.display({
         meta: t("membersTable.actions"),
         id: "actions",

@@ -26,36 +26,17 @@ import { AddMember } from "./add-member";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { useMembersQuery } from "@/hooks/use-members-query";
 import { FilterPopover } from "./filter-popover";
-import { testApiConnectivity, testMemberOperations } from "@/api/apiTest";
-import { useAuth } from "@/components/providers/auth-provider";
 import { HideFieldsPopover } from "./hide-fields-popover";
 import { useMembersColumns } from "@/hooks/use-members-columns";
 import loadingAnimation from "@/assets/loading.json";
 import Lottie from "lottie-react";
 import { Card, CardContent, CardHeader } from "./card";
-import { Button } from "./button";
 
 const membersPerPage = 20;
 
 export function MembersTable() {
   const { t } = useTranslation();
-  const { getAccessToken } = useAuth();
   const { insertMutation } = useMembersMutations();
-  
-  // Test API connectivity
-  const handleTestApi = async () => {
-    try {
-      const token = await getAccessToken();
-      console.log('🔐 Auth token obtained');
-      
-      const connectivityTest = await testApiConnectivity(token);
-      const operationsTest = await testMemberOperations(token);
-      
-      console.log('📊 Test Results:', { connectivityTest, operationsTest });
-    } catch (error) {
-      console.error('🚨 Test failed:', error);
-    }
-  };
   const isMobile = useWindowSize();
   const [debouncedSearch, setDebouncedSearch] = useState<string | null>(null);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -67,15 +48,11 @@ export function MembersTable() {
           suspended_till: false,
           expiration_date: false,
           card_number: false,
-          is_active: false,
-          is_deleted: false,
         }
       : {
           email: false,
           suspended_till: false,
           expiration_date: false,
-          is_active: false,
-          is_deleted: false,
         },
   );
 
@@ -124,20 +101,10 @@ export function MembersTable() {
           <Separator className="h-0.5 bg-neutral-6 my-6" />
           <div className="flex justify-between">
             <div className="flex flex-wrap items-baseline">
-              <div className="mr-2">
-                <FilterPopover
-                  columnFilters={columnFilters}
-                  setColumnFilters={setColumnFilters}
-                />
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleTestApi}
-                className="mr-2"
-              >
-                🧪 Test API
-              </Button>
+              <FilterPopover
+                columnFilters={columnFilters}
+                setColumnFilters={setColumnFilters}
+              />
             </div>
             <HideFieldsPopover
               table={table}
