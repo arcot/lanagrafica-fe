@@ -45,12 +45,14 @@ export function MembersTable() {
       ? {
           birth_date: false,
           email: false,
+          province: false,
           suspended_till: false,
           expiration_date: false,
           card_number: false,
         }
       : {
           email: false,
+          province: false,
           suspended_till: false,
           expiration_date: false,
         },

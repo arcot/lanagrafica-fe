@@ -30,6 +30,14 @@ export function useMembersColumns() {
         cell: (info) => getCustomDate(info.getValue()),
         header: () => <span>{t("membersTable.birthDate")}</span>,
       }),
+      columnHelper.accessor("province", {
+        meta: t("membersTable.province"),
+        cell: (info) => {
+          const result = info.getValue();
+          return result ? result : "-";
+        },
+        header: () => <span>{t("membersTable.province")}</span>,
+      }),
       columnHelper.accessor("cardNumber", {
         meta: t("membersTable.cardNumber"),
         cell: (info) => {

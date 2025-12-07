@@ -89,6 +89,18 @@ export function PersonalTab({
           }
           disabled={!isItaly}
         />
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            {t("newMember.provinceFieldLabel")}
+          </label>
+          <input
+            type="text"
+            value={row.province || "-"}
+            disabled
+            className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm cursor-not-allowed opacity-75"
+            readOnly
+          />
+        </div>
         <SelectField
           form={form}
           name="doc_type"
