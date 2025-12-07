@@ -12,6 +12,7 @@ import {
   isValidISODate,
   hasExpired,
   hasBeenSuspended,
+  calculateProvince,
 } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
@@ -124,15 +125,31 @@ export function MemberDetails({
   }, [open, form, rowValues, isDirty]);
 
   async function onSubmit(data: FormData) {
-    const modifiedFields = Object.keys(dirtyFields) as Array<keyof FormData>;
-    const modifiedData = modifiedFields.reduce((acc, field) => {
-      acc[field] = data[field];
-      return acc;
-    }, {} as Partial<FormData>);
+    // Backend requires ALL fields for updates (not just modified fields)
+    // Calculate province to ensure it's in sync with country/city
+    const province = calculateProvince(data.country, data.birth_place);
+
+    // Build complete member update object with all fields
+    const updateData = {
+      name: data.name,
+      surname: data.surname,
+      province: province,
+      birthDate: data.birth_date,
+      birthPlace: data.birth_place,
+      country: data.country,
+      docType: data.doc_type,
+      docId: data.doc_id,
+      email: data.email || undefined, // Optional: send undefined if empty
+      note: data.note || undefined, // Optional
+      measure: data.measure || undefined, // Optional
+      suspendedTill: data.suspended_till || undefined, // Optional
+      expirationDate: data.expiration_date || undefined, // Optional
+      isActive: isActive,
+    };
 
     await updateMutation.mutate({
       id: row.id,
-      details: { ...modifiedData, isActive: isActive },
+      details: updateData,
       name: row.name || "",
     });
     setOpen(false);
