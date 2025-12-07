@@ -86,10 +86,27 @@ export interface ApiMemberExt extends ApiMember {
   status: MemberStatus;
 }
 
-// Card Number types
-export interface ApiCardNumber {
+// Card Number types (from card-api backend)
+export interface CardNumber {
   id: string;
   cardNumber: string;
-  isAvailable?: boolean;
-  assignedMemberId?: string;
+  insertDate: string; // ISO date string (LocalDateTime from backend)
+  dayOfUse: string | null; // ISO date string when assigned, null if unused
+  isActive: boolean; // false = available for assignment, true = assigned to member
+}
+
+export interface CardPageResponse extends ApiResponse {
+  content: CardNumber[];
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  first: boolean;
+  number: number; // Current page number
+  size: number; // Page size
+}
+
+export interface CardStats {
+  total: number;
+  available: number;
+  assigned: number;
 }
