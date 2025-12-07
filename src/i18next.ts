@@ -136,6 +136,17 @@ i18n
             week_one: "week",
             week_other: "{{count}} weeks",
           },
+          signature: {
+            clear: "Clear",
+            save: "Save Signature",
+          },
+          consents: {
+            selectAll: "Select All",
+            deselectAll: "Deselect All",
+            proceedToSignature: "Proceed to Signature",
+            title: "Terms and Conditions",
+            acceptTerms: "Accept Terms",
+          },
         },
       },
       it: {
@@ -262,6 +273,17 @@ i18n
             month_other: "{{count}} mesi",
             week_one: "settimana",
             week_other: "{{count}} settimane",
+          },
+          signature: {
+            clear: "Cancella",
+            save: "Salva Firma",
+          },
+          consents: {
+            selectAll: "Seleziona Tutto",
+            deselectAll: "Deseleziona Tutto",
+            proceedToSignature: "Procedi alla Firma",
+            title: "Termini e Condizioni",
+            acceptTerms: "Accetta Termini",
           },
         },
       },

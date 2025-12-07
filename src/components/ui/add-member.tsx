@@ -5,6 +5,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -15,7 +21,7 @@ import countries from "@/assets/countries.json";
 import cities from "@/assets/cities.json";
 import documents from "@/assets/documents.json";
 import {
-  genCardNumber,
+  calculateProvince,
   isAdult,
   isValidISODate,
 } from "@/lib/utils";
@@ -27,6 +33,8 @@ import { DateField } from "@/components/ui/date-field";
 import { Plus } from "lucide-react";
 import { InsertMutation } from "@/hooks/use-table-mutations";
 import { MemberInsert } from "@/types/types";
+import { ConsentForm } from "@/components/ui/consent-form";
+import { SignaturePad } from "@/components/ui/signature-pad";
 
 export function AddMember({
   insertMutation,
@@ -41,6 +49,11 @@ export function AddMember({
   const [year, setYear] = useState("");
   const [open, setOpen] = useState(false);
 
+  // Terms and signature workflow state
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const [, setSignatureData] = useState<string | null>(null);
+
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
     surname: z.string().min(1, { message: t("validation.required") }),
@@ -53,7 +66,7 @@ export function AddMember({
     country: z.string().min(1, { message: t("validation.required") }),
     doc_type: z.string().min(1, { message: t("validation.required") }),
     doc_id: z.string().min(1, { message: t("validation.required") }),
-    email: z.string(),
+    email: z.string().email({ message: t("validation.required") }).optional().or(z.literal("")),
   });
 
   type FormData = z.infer<typeof formSchema>;
@@ -73,10 +86,13 @@ export function AddMember({
   });
 
   const country = form.watch("country");
-  const isItaly = country === "Italy";
+  const isItaly = country === "Italy" || country === "Italia";
 
   function toInsert(data: FormData): MemberInsert {
-    const updateFields: MemberInsert = {
+    // Calculate province based on country and city selection
+    const province = calculateProvince(data.country, data.birth_place);
+
+    const insertData: MemberInsert = {
       name: data.name,
       surname: data.surname,
       birthDate: data.birth_date,
@@ -84,20 +100,47 @@ export function AddMember({
       country: data.country,
       docType: data.doc_type,
       docId: data.doc_id,
-      email: data.email,
-      province: "Roma", // Default province - should be made configurable
-      cardNumber: genCardNumber(),
+      email: data.email || undefined,
+      province: province,
+      // Note: cardNumber is auto-assigned by backend
+      // Note: note and measure are NOT included in add form (only edit form)
     };
 
-    return updateFields;
+    return insertData;
   }
 
-  async function onSubmit(data: FormData) {
+  function handleFormSubmit() {
+    // Instead of submitting immediately, show terms modal first
+    setShowTermsModal(true);
+  }
+
+  function handleTermsAccepted() {
+    // Close terms modal and show signature pad
+    setShowTermsModal(false);
+    setShowSignaturePad(true);
+  }
+
+  function handleSignatureSaved(signature: string) {
+    // Save signature and proceed to actual submission
+    setSignatureData(signature);
+    setShowSignaturePad(false);
+    // Now actually submit the form
+    submitMember();
+  }
+
+  function handleSignatureCleared() {
+    setSignatureData(null);
+  }
+
+  async function submitMember() {
+    const data = form.getValues();
     const memberSerialized = toInsert(data);
+
     await insertMutation.mutate({
       details: memberSerialized,
       name: memberSerialized.name || "",
     });
+
     resetForm();
     setOpen(false);
   }
@@ -108,111 +151,140 @@ export function AddMember({
     setYear("");
     setCountrySearch("");
     setCitySearch("");
+    setSignatureData(null);
+    setShowTermsModal(false);
+    setShowSignaturePad(false);
     form.reset();
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline">
-          <Plus className="w-4 sm:mr-2" />
-          <span className="hidden sm:inline-block">
-            {t("members.addMember")}
-          </span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent className="overflow-y-scroll w-full">
-        <SheetHeader>
-          <div className="flex gap-2">
-            <SheetTitle>{t("members.addMember")}</SheetTitle>
-          </div>
-        </SheetHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-8 flex flex-col"
-          >
-            <InputField
-              // @ts-expect-error - due to FormData cannot be exported
-              form={form}
-              label={t("newMember.nameFieldLabel")}
-              name="name"
-            />
-            <InputField
-              // @ts-expect-error - due to FormData cannot be exported
-              form={form}
-              label={t("newMember.surnameFieldLabel")}
-              name="surname"
-            />
-            <DateField
-              // @ts-expect-error - due to FormData cannot be exported
-              form={form}
-              label={t("newMember.dateFieldLabel")}
-              name="birth_date"
-              day={day}
-              month={month}
-              year={year}
-              setDay={setDay}
-              setMonth={setMonth}
-              setYear={setYear}
-            />
-            <Combobox
-              // @ts-expect-error - due to FormData cannot be exported
-              form={form}
-              name="country"
-              label={t("newMember.countryFieldLabel")}
-              data={[
-                i18n.language === "it" ? "__Altro__" : "__Other__",
-                ...countries.map((entry) => entry.en),
-              ]}
-              search={countrySearch}
-              setSearch={setCountrySearch}
-            />
-            <Combobox
-              // @ts-expect-error - due to FormData cannot be exported
-              form={form}
-              name="birth_place"
-              label={t("newMember.cityFieldLabel")}
-              data={[
-                i18n.language === "it" ? "__Altro__" : "__Other__",
-                ...cities,
-              ]}
-              search={citySearch}
-              setSearch={setCitySearch}
-              value={isItaly ? "" : country || ""}
-              disabled={!isItaly}
-            />
-            <SelectField
-              // @ts-expect-error - due to FormData cannot be exported
-              form={form}
-              name="doc_type"
-              label={t("newMember.docTypeFieldLabel")}
-              data={documents.map((entry) =>
-                i18n.language === "it" ? entry.it : entry.en,
-              )}
-            />
-            <InputField
-              // @ts-expect-error - due to FormData cannot be exported
-              form={form}
-              label={t("newMember.docIdFieldLabel")}
-              name="doc_id"
-            />
-            <InputField
-              // @ts-expect-error - due to FormData cannot be exported
-              form={form}
-              label={t("newMember.emailFieldLabel")}
-              name="email"
-            />
-            <Button
-              disabled={form.formState.isSubmitting}
-              type="submit"
-              className="w-full mt-8"
+    <>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button variant="outline">
+            <Plus className="w-4 sm:mr-2" />
+            <span className="hidden sm:inline-block">
+              {t("members.addMember")}
+            </span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent className="overflow-y-scroll w-full">
+          <SheetHeader>
+            <div className="flex gap-2">
+              <SheetTitle>{t("members.addMember")}</SheetTitle>
+            </div>
+          </SheetHeader>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleFormSubmit)}
+              className="space-y-8 flex flex-col"
             >
-              {t("newMember.submit")}
-            </Button>
-          </form>
-        </Form>
-      </SheetContent>
-    </Sheet>
+              <InputField
+                // @ts-expect-error - due to FormData cannot be exported
+                form={form}
+                label={t("newMember.nameFieldLabel")}
+                name="name"
+              />
+              <InputField
+                // @ts-expect-error - due to FormData cannot be exported
+                form={form}
+                label={t("newMember.surnameFieldLabel")}
+                name="surname"
+              />
+              <DateField
+                // @ts-expect-error - due to FormData cannot be exported
+                form={form}
+                label={t("newMember.dateFieldLabel")}
+                name="birth_date"
+                day={day}
+                month={month}
+                year={year}
+                setDay={setDay}
+                setMonth={setMonth}
+                setYear={setYear}
+              />
+              <Combobox
+                // @ts-expect-error - due to FormData cannot be exported
+                form={form}
+                name="country"
+                label={t("newMember.countryFieldLabel")}
+                data={[
+                  i18n.language === "it" ? "__Altro__" : "__Other__",
+                  ...countries.map((entry) => entry.en),
+                ]}
+                search={countrySearch}
+                setSearch={setCountrySearch}
+              />
+              <Combobox
+                // @ts-expect-error - due to FormData cannot be exported
+                form={form}
+                name="birth_place"
+                label={t("newMember.cityFieldLabel")}
+                data={[
+                  i18n.language === "it" ? "__Altro__" : "__Other__",
+                  ...cities,
+                ]}
+                search={citySearch}
+                setSearch={setCitySearch}
+                value={isItaly ? "" : country || ""}
+                disabled={!isItaly}
+              />
+              <SelectField
+                // @ts-expect-error - due to FormData cannot be exported
+                form={form}
+                name="doc_type"
+                label={t("newMember.docTypeFieldLabel")}
+                data={documents.map((entry) =>
+                  i18n.language === "it" ? entry.it : entry.en,
+                )}
+              />
+              <InputField
+                // @ts-expect-error - due to FormData cannot be exported
+                form={form}
+                label={t("newMember.docIdFieldLabel")}
+                name="doc_id"
+              />
+              <InputField
+                // @ts-expect-error - due to FormData cannot be exported
+                form={form}
+                label={t("newMember.emailFieldLabel")}
+                name="email"
+                type="email"
+              />
+              <Button
+                disabled={form.formState.isSubmitting}
+                type="submit"
+                className="w-full mt-8"
+              >
+                {t("consents.acceptTerms")}
+              </Button>
+            </form>
+          </Form>
+        </SheetContent>
+      </Sheet>
+
+      {/* Terms and Conditions Modal */}
+      <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>{t("consents.title")}</DialogTitle>
+          </DialogHeader>
+          <ConsentForm onProceed={handleTermsAccepted} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Signature Pad Modal */}
+      <Dialog open={showSignaturePad} onOpenChange={setShowSignaturePad}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>{t("signature.save")}</DialogTitle>
+          </DialogHeader>
+          <SignaturePad
+            onSave={handleSignatureSaved}
+            onClear={handleSignatureCleared}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -23,35 +23,16 @@ export function FilterPopover({
   function handleFilterBadgeAddition(filter: string) {
     setOpen(false);
     let filterId: string;
-    let filterValue: string | boolean;
+    let filterValue: string;
 
     if (filter === "all") {
       setColumnFilters([]);
       return;
     }
 
-    if (filter === "active") {
-      filterId = "is_active";
-      filterValue = true;
-    }
-    if (filter === "inactive") {
-      filterId = "is_active";
-      filterValue = false;
-    }
-    if (filter === "deleted") {
-      filterId = "is_deleted";
-      filterValue = true;
-    }
-
-    if (filter === "expired") {
-      filterId = "expiration_date";
-      filterValue = filter;
-    }
-
-    if (filter === "suspended") {
-      filterId = "suspended_till";
-      filterValue = filter;
-    }
+    // All filters use the "status" column
+    filterId = "status";
+    filterValue = filter;
 
     setColumnFilters((prev: ColumnFiltersState) => {
       if (
@@ -76,28 +57,7 @@ export function FilterPopover({
           {t("membersTable.addFilter")}
           {columnFilters.length ? (
             columnFilters.map((filter) => {
-              let filterVariant = "";
-
-              if (filter.id === "is_active" && filter.value === true) {
-                filterVariant = "active";
-              }
-
-              if (filter.id === "is_active" && filter.value === false) {
-                filterVariant = "inactive";
-              }
-
-              if (filter.id === "expiration_date") {
-                filterVariant = "expired";
-              }
-
-              if (filter.id === "suspended_till") {
-                filterVariant = "suspended";
-              }
-
-              if (filter.id === "is_deleted") {
-                filterVariant = "deleted";
-              }
-
+              const filterVariant = filter.value as string;
               return (
                 <div className="ml-2" key={filterVariant}>
                   <StatusBadge status={filterVariant} />

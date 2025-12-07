@@ -30,10 +30,9 @@ export interface ApiMemberInsert {
   email?: string;
   docType?: string;
   docId?: string;
-  cardNumber?: string;
-  note?: string;
   country?: string;
-  measure?: string;
+  // Note: cardNumber is auto-assigned by backend
+  // Note: note and measure are only used in edit form, not add form
 }
 
 export interface ApiMemberUpdate {

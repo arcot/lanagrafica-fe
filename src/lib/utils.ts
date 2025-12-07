@@ -1,6 +1,24 @@
 import { MemberExt, Member, MemberStatus } from "@/types/types";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import comuniData from "@/assets/comuni.json";
+import countriesData from "@/assets/countries.json";
+
+// Type definitions for imported JSON data
+interface ComuneData {
+  nome: string;
+  sigla?: string;
+  provincia?: {
+    nome: string;
+    codice: string;
+  };
+}
+
+interface CountryData {
+  en: string;
+  it: string;
+  code: string;
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -132,4 +150,39 @@ export function getDateMonthsLater(count: number) {
   const date = new Date();
   date.setMonth(date.getMonth() + count);
   return date.toISOString().split("T")[0];
+}
+
+/**
+ * Get province code from Italian city name
+ * Returns the province sigla (2-letter code) for the given Italian city
+ */
+export function getProvinceFromCity(cityName: string): string {
+  const comuni = comuniData as ComuneData[];
+  const city = comuni.find((comune) => comune.nome === cityName);
+  return city?.sigla || "";
+}
+
+/**
+ * Get country code from country name
+ * Works with both English and Italian country names
+ */
+export function getCountryCode(countryName: string): string {
+  const countries = countriesData as CountryData[];
+  const country = countries.find(
+    (c) => c.en === countryName || c.it === countryName
+  );
+  return country?.code || "";
+}
+
+/**
+ * Calculate province based on country and city selection
+ * For Italy: extract province code from city
+ * For other countries: use country code as province
+ */
+export function calculateProvince(country: string, birthPlace: string): string {
+  if (country === "Italy" || country === "Italia") {
+    return getProvinceFromCity(birthPlace);
+  } else {
+    return getCountryCode(country);
+  }
 }
