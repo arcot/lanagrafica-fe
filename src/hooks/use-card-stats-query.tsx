@@ -8,7 +8,7 @@ import type { CardStats } from "@/types/api.types";
  * Fetches available cards count only
  */
 export function useCardStatsQuery() {
-  const { getAccessToken, isAuthenticated, isAdmin } = useAuth();
+  const { getAccessToken, isAuthenticated, isAdmin, isStaff } = useAuth();
 
   return useQuery({
     queryKey: ["card-stats"],
@@ -24,7 +24,7 @@ export function useCardStatsQuery() {
         assigned: 0, // Not needed
       };
     },
-    enabled: isAuthenticated && isAdmin,
+    enabled: isAuthenticated && (isAdmin || isStaff),
     // Refetch every 30 seconds to keep stats fresh
     refetchInterval: 30000,
     // Keep previous data while refetching for smoother UX

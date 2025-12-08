@@ -31,11 +31,13 @@ import { useMembersColumns } from "@/hooks/use-members-columns";
 import loadingAnimation from "@/assets/loading.json";
 import Lottie from "lottie-react";
 import { Card, CardContent, CardHeader } from "./card";
+import { useAuth } from "@/components/providers/auth-provider";
 
 const membersPerPage = 20;
 
 export function MembersTable() {
   const { t } = useTranslation();
+  const { isStaff } = useAuth();
   const { insertMutation } = useMembersMutations();
   const isMobile = useWindowSize();
   const [debouncedSearch, setDebouncedSearch] = useState<string | null>(null);
@@ -182,7 +184,11 @@ export function MembersTable() {
                         colSpan={columns.length}
                         className="text-center"
                       >
-                        {isPending ? (
+                        {isStaff && (!debouncedSearch || debouncedSearch.trim().length === 0) ? (
+                          <div className="py-8 text-muted-foreground">
+                            {t("membersTable.searchToBegin")}
+                          </div>
+                        ) : isPending ? (
                           <Lottie
                             animationData={loadingAnimation}
                             loop={true}

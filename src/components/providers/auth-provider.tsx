@@ -7,6 +7,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   isAdmin: boolean;
+  isStaff: boolean;
   getAccessToken: () => Promise<string>;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -17,6 +18,7 @@ export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   isAdmin: false,
+  isStaff: false,
   getAccessToken: async () => '',
   signIn: async () => {},
   signOut: async () => {},
@@ -37,25 +39,29 @@ export const AuthProvider = ({ children }: Node) => {
   } = useAuth0();
   
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
 
   useEffect(() => {
-    const checkAdminRole = async () => {
+    const checkRoles = async () => {
       if (isAuthenticated && user) {
         try {
           const token = await getAccessTokenSilently();
           const decodedToken = jwtDecode(token) as { permissions?: string[] };
           const permissions = decodedToken.permissions || [];
           setIsAdmin(Array.isArray(permissions) && permissions.includes('Admin'));
+          setIsStaff(Array.isArray(permissions) && permissions.includes('Staff'));
         } catch (error) {
-          console.error('Error checking admin role:', error);
+          console.error('Error checking roles:', error);
           setIsAdmin(false);
+          setIsStaff(false);
         }
       } else {
         setIsAdmin(false);
+        setIsStaff(false);
       }
     };
 
-    checkAdminRole();
+    checkRoles();
   }, [isAuthenticated, user, getAccessTokenSilently]);
 
   const signIn = async () => {
@@ -84,14 +90,15 @@ export const AuthProvider = ({ children }: Node) => {
   }
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
-      isLoading, 
-      isAdmin, 
-      getAccessToken, 
-      signIn, 
-      signOut 
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
+      isLoading,
+      isAdmin,
+      isStaff,
+      getAccessToken,
+      signIn,
+      signOut
     }}>
       {children}
     </AuthContext.Provider>

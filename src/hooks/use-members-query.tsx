@@ -7,7 +7,7 @@ export function useMembersQuery(
   debouncedSearch: string | null,
   membersPerPage: number,
 ) {
-  const { getAccessToken, isAuthenticated, isAdmin } = useAuth();
+  const { getAccessToken, isAuthenticated, isAdmin, isStaff } = useAuth();
 
   async function fetchMembers({ pageParam }: { pageParam: number }) {
     const token = await getAccessToken();
@@ -26,6 +26,6 @@ export function useMembersQuery(
     getNextPageParam: (lastPage, _, lastPageParam) =>
       lastPage.length === membersPerPage ? lastPageParam + 1 : null,
     initialPageParam: 0,
-    enabled: isAuthenticated && isAdmin, // Only fetch when authenticated and admin
+    enabled: isAuthenticated && (isAdmin || (isStaff && debouncedSearch !== null && debouncedSearch.trim().length > 0)),
   });
 }

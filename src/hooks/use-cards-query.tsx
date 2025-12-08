@@ -11,7 +11,7 @@ export function useCardsQuery(
   filter: "available" | "all" = "available",
   cardsPerPage: number = 20
 ) {
-  const { getAccessToken, isAuthenticated, isAdmin } = useAuth();
+  const { getAccessToken, isAuthenticated, isAdmin, isStaff } = useAuth();
 
   return useInfiniteQuery({
     queryKey: ["cards", filter],
@@ -25,6 +25,6 @@ export function useCardsQuery(
       return lastPage.length === cardsPerPage ? lastPageParam + 1 : null;
     },
     initialPageParam: 0,
-    enabled: isAuthenticated && isAdmin,
+    enabled: isAuthenticated && (isAdmin || isStaff),
   });
 }

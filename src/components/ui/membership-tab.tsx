@@ -15,6 +15,7 @@ import { Ban, RefreshCcw } from "lucide-react";
 import { Textarea } from "./textarea";
 import { TabsContent } from "@radix-ui/react-tabs";
 import { SuspendPopover } from "./suspend-popover";
+import { useAuth } from "@/components/providers/auth-provider";
 
 type MembershipTabProps = {
   form: UseFormReturn;
@@ -30,7 +31,10 @@ export function MembershipTab({
   isSuspended,
 }: MembershipTabProps) {
   const { t } = useTranslation();
+  const { isStaff, isAdmin } = useAuth();
   const isRenewAllowed = !isSuspended && isExpired;
+  const shouldHideMeasure = isStaff && isSuspended;
+  const canManageSuspension = isAdmin;
 
   return (
     <TabsContent value="membership">
@@ -110,44 +114,50 @@ export function MembershipTab({
             )}
           />
           <div className="flex flex-col space-y-6">
-            <FormField
-              control={form.control}
-              name="measure"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("memberDetails.suspensionLabel")}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      disabled={!isSuspended}
-                      className="resize-none"
-                      {...field}
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {isSuspended ? (
-              <Button
-                disabled={form.formState.isSubmitting}
-                type="button"
-                variant="suspended"
-                className="self-start"
-                onClick={() => {
-                  form.setValue("suspended_till", "", {
-                    shouldDirty: true,
-                  });
-                  form.setValue("measure", "", {
-                    shouldDirty: true,
-                  });
-                }}
-              >
-                <Ban className={"w-5 mr-3"} />
-                {t("memberDetails.resume")}
-              </Button>
-            ) : (
-              <SuspendPopover form={form} isSuspended={isSuspended} />
+            {!shouldHideMeasure && (
+              <FormField
+                control={form.control}
+                name="measure"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("memberDetails.suspensionLabel")}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        disabled={!isSuspended}
+                        className="resize-none"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {canManageSuspension && (
+              <>
+                {isSuspended ? (
+                  <Button
+                    disabled={form.formState.isSubmitting}
+                    type="button"
+                    variant="suspended"
+                    className="self-start"
+                    onClick={() => {
+                      form.setValue("suspended_till", "", {
+                        shouldDirty: true,
+                      });
+                      form.setValue("measure", "", {
+                        shouldDirty: true,
+                      });
+                    }}
+                  >
+                    <Ban className={"w-5 mr-3"} />
+                    {t("memberDetails.resume")}
+                  </Button>
+                ) : (
+                  <SuspendPopover form={form} isSuspended={isSuspended} />
+                )}
+              </>
             )}
           </div>
         </div>
