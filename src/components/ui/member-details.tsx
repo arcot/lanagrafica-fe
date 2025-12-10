@@ -105,7 +105,7 @@ export function MemberDetails({
     resolver: zodResolver(formSchema),
     defaultValues: rowValues,
   });
-  const { isDirty, dirtyFields } = form.formState;
+  const { isDirty } = form.formState;
   const isSuspended = hasBeenSuspended(
     new Date(form.watch("suspended_till") || ""),
   );

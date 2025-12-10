@@ -1,7 +1,14 @@
+// Support both runtime (window.ENV) and build-time (import.meta.env) config
+// Runtime config takes precedence for K8s deployments
+const getEnv = (key: string) => {
+  // @ts-ignore - window.ENV is injected at runtime
+  return (window.ENV && window.ENV[key]) || import.meta.env[key] || '';
+};
+
 export const apiConfig = {
-  baseUrl: import.meta.env.VITE_API_BASE_URL || '',
-  gatewayPort: import.meta.env.VITE_API_GATEWAY_PORT || '8765',
-  version: import.meta.env.VITE_API_VERSION || '/api/v1',
+  baseUrl: getEnv('VITE_API_BASE_URL'),
+  gatewayPort: getEnv('VITE_API_GATEWAY_PORT') || '8765',
+  version: getEnv('VITE_API_VERSION') || '/api/v1',
   get fullUrl() {
     // In development, use the Vite proxy
     if (import.meta.env.DEV) {

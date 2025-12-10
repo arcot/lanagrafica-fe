@@ -5,7 +5,7 @@ export {
   type ApiMemberInsert as MemberInsert,
   type ApiMemberUpdate as MemberUpdate,
   type MemberStatus,
-  type ApiCardNumber as CardNumber,
+  type CardNumber,
   type ApiResponse,
   type ApiSearchRequest,
 } from "./api.types";
