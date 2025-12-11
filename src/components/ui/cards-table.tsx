@@ -45,7 +45,7 @@ export function CardsTable({ filter = "available" }: CardsTableProps) {
     cardsPerPage
   );
 
-  const columns = useMemo<ColumnDef<CardNumber, any>[]>(
+  const columns = useMemo<ColumnDef<CardNumber, unknown>[]>(
     () => [
       columnHelper.accessor("cardNumber", {
         header: () => t("cards.cardNumber"),

@@ -1,7 +1,7 @@
 // Support both runtime (window.ENV) and build-time (import.meta.env) config
 // Runtime config takes precedence for K8s deployments
 const getEnv = (key: string) => {
-  // @ts-ignore - window.ENV is injected at runtime
+  // @ts-expect-error - window.ENV is injected at runtime
   return (window.ENV && window.ENV[key]) || import.meta.env[key] || '';
 };
 

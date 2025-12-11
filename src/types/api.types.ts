@@ -54,7 +54,7 @@ export interface ApiMemberUpdate {
   measure?: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T;
   content?: T[]; // For paginated responses
   error?: string;
