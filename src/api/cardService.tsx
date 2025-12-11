@@ -1,6 +1,6 @@
 import { restClient } from "./restClient";
 import { apiConfig } from "@/lib/api-config";
-import { CardNumber, CardPageResponse } from "@/types/api.types";
+import { CardPageResponse } from "@/types/api.types";
 
 /**
  * Get total available cards count
@@ -80,10 +80,6 @@ export async function uploadAndImportCards(
       {},
       token
     );
-
-    if (importResponse.error) {
-      throw new Error(importResponse.error);
-    }
 
     return importResponse;
   } catch (error) {

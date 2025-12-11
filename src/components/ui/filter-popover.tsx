@@ -22,8 +22,6 @@ export function FilterPopover({
 
   function handleFilterBadgeAddition(filter: string) {
     setOpen(false);
-    let filterId: string;
-    let filterValue: string;
 
     if (filter === "all") {
       setColumnFilters([]);
@@ -31,8 +29,8 @@ export function FilterPopover({
     }
 
     // All filters use the "status" column
-    filterId = "status";
-    filterValue = filter;
+    const filterId = "status";
+    const filterValue = filter;
 
     setColumnFilters((prev: ColumnFiltersState) => {
       if (

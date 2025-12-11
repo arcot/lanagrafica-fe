@@ -1,5 +1,5 @@
 import { restClient } from "./restClient";
-import { Member, MemberInsert, MemberUpdate, ApiResponse, ApiSearchRequest } from "@/types/types";
+import { Member, MemberInsert, MemberUpdate, ApiResponse } from "@/types/types";
 
 function serialize<T extends MemberUpdate | MemberInsert>(data: T) {
   const serialized = Object.entries(data).map((item) => {
@@ -10,7 +10,7 @@ function serialize<T extends MemberUpdate | MemberInsert>(data: T) {
   return Object.fromEntries(serialized) as T;
 }
 
-export async function renewMember(id: string, expirationDate: string, token: string) {
+export async function renewMember(id: string, _expirationDate: string, token: string) {
   const response = await restClient.put<ApiResponse<Member>>(
     `/member/renew-card-member/${id}`,
     {},
@@ -55,7 +55,7 @@ export async function insertMember(details: MemberInsert, token: string) {
 export async function searchMember(
   debouncedSearch: string | null,
   pageNumber: number,
-  pageSize: number,
+  _pageSize: number,
   token: string
 ): Promise<Member[]> {
   if (debouncedSearch) {

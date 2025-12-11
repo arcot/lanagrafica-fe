@@ -1,6 +1,6 @@
 import { apiConfig } from '@/lib/api-config';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
@@ -60,7 +60,7 @@ export class RestClient {
     return this.makeRequest<T>(endpoint, { method: 'GET' }, token);
   }
 
-  async post<T>(endpoint: string, data: any, token?: string): Promise<T> {
+  async post<T>(endpoint: string, data: unknown, token?: string): Promise<T> {
     return this.makeRequest<T>(
       endpoint,
       {
@@ -71,7 +71,7 @@ export class RestClient {
     );
   }
 
-  async put<T>(endpoint: string, data: any, token?: string): Promise<T> {
+  async put<T>(endpoint: string, data: unknown, token?: string): Promise<T> {
     return this.makeRequest<T>(
       endpoint,
       {

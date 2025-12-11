@@ -20,7 +20,7 @@ export function useCardsQuery(
       const response = await getCardsByFilter(filter, pageParam, token);
       return response.content || [];
     },
-    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
       // Continue fetching if we got a full page
       return lastPage.length === cardsPerPage ? lastPageParam + 1 : null;
     },
