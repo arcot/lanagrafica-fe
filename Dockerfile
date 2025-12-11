@@ -6,17 +6,20 @@ FROM node:18 AS build
 
 WORKDIR /app
 
+# Enable corepack for pnpm
+RUN corepack enable
+
 # Copy package files
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Build the application (no env vars needed at build time)
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: Serve with node serve (runtime env config)
 FROM node:18-slim
