@@ -5,7 +5,6 @@ import {
   getCoreRowModel,
   useReactTable,
   createColumnHelper,
-  type ColumnDef,
 } from "@tanstack/react-table";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useCardsQuery } from "@/hooks/use-cards-query";
@@ -45,7 +44,7 @@ export function CardsTable({ filter = "available" }: CardsTableProps) {
     cardsPerPage
   );
 
-  const columns = useMemo<ColumnDef<CardNumber, unknown>[]>(
+  const columns = useMemo(
     () => [
       columnHelper.accessor("cardNumber", {
         header: () => t("cards.cardNumber"),
