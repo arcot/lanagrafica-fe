@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for LANagrafica Frontend (React + TypeScript + Vite)
-# Uses runtime environment configuration for K8s compatibility
+# Uses Nginx for production-grade static file serving with runtime env config
 
 # Stage 1: Build the application
 FROM node:18 AS build
@@ -21,21 +21,20 @@ COPY . .
 # Build the application (no env vars needed at build time)
 RUN pnpm run build
 
-# Stage 2: Serve with node serve (runtime env config)
-FROM node:18-slim
-
-WORKDIR /app
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
 
 # Copy built assets from build stage
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Install serve globally
-RUN npm install -g serve
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Create startup script that generates env.js at runtime
-COPY <<'EOF' /app/generate-env-config.sh
+# Create entrypoint script that generates env.js at runtime
+COPY <<'EOF' /docker-entrypoint.d/40-generate-env-config.sh
 #!/bin/sh
-cat <<ENDOFFILE > /app/dist/env.js
+# Generate runtime environment configuration
+cat <<ENDOFFILE > /usr/share/nginx/html/env.js
 window.ENV = {
   VITE_AUTH0_DOMAIN: "$VITE_AUTH0_DOMAIN",
   VITE_AUTH0_CLIENT_ID: "$VITE_AUTH0_CLIENT_ID",
@@ -45,13 +44,14 @@ window.ENV = {
   VITE_API_VERSION: "$VITE_API_VERSION"
 };
 ENDOFFILE
-serve -s dist -l 3000
+echo "Generated runtime environment configuration at /usr/share/nginx/html/env.js"
 EOF
 
-RUN chmod +x /app/generate-env-config.sh
+# Make the entrypoint script executable
+RUN chmod +x /docker-entrypoint.d/40-generate-env-config.sh
 
-# Expose port 3000
-EXPOSE 3000
+# Expose port 80 (standard HTTP port for Nginx)
+EXPOSE 80
 
-# Start serve with runtime env config generation
-CMD ["/app/generate-env-config.sh"]
+# Nginx base image already has proper entrypoint that will run scripts in /docker-entrypoint.d/
+# and then start nginx in foreground mode
