@@ -7,15 +7,26 @@ const getEnv = (key: string) => {
 
 export const apiConfig = {
   baseUrl: getEnv('VITE_API_BASE_URL'),
-  gatewayPort: getEnv('VITE_API_GATEWAY_PORT') || '8765',
+  gatewayPort: getEnv('VITE_API_GATEWAY_PORT'),
   version: getEnv('VITE_API_VERSION') || '/api/v1',
   get fullUrl() {
     // In development, use the Vite proxy
     if (import.meta.env.DEV) {
       return this.version; // Just '/api/v1' - Vite proxy will handle the rest
     }
-    // In production, use the full external URL
-    return `${this.baseUrl}:${this.gatewayPort}${this.version}`;
+
+    // In production with port specified (legacy direct access)
+    if (this.baseUrl && this.gatewayPort) {
+      return `${this.baseUrl}:${this.gatewayPort}${this.version}`;
+    }
+
+    // In production with baseUrl but no port (Ingress routing)
+    if (this.baseUrl) {
+      return `${this.baseUrl}${this.version}`;
+    }
+
+    // Fallback to relative path (nginx proxy or Ingress handles routing)
+    return this.version;
   }
 };
 
