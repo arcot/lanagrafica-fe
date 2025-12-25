@@ -29,14 +29,14 @@ export function SignaturePad({ onSave, onClear }: SignaturePadProps) {
 
   return (
     <div className="flex flex-col items-center gap-4 w-full">
-      <div className="border-2 border-border rounded-md overflow-hidden">
+      <div className="border-2 border-border rounded-md overflow-hidden bg-gray-50">
         <SignatureCanvas
           ref={signatureRef}
           penColor="black"
           canvasProps={{
             width: 400,
             height: 200,
-            className: "signature-canvas",
+            className: "signature-canvas bg-gray-50",
           }}
         />
       </div>

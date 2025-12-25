@@ -1,7 +1,14 @@
+// Support both runtime (window.ENV) and build-time (import.meta.env) config
+// Runtime config takes precedence for K8s deployments
+const getEnv = (key: string) => {
+  // @ts-expect-error - window.ENV is injected at runtime
+  return (window.ENV && window.ENV[key]) || import.meta.env[key] || '';
+};
+
 export const auth0Config = {
-  domain: import.meta.env.VITE_AUTH0_DOMAIN || '',
-  clientId: import.meta.env.VITE_AUTH0_CLIENT_ID || '',
-  audience: import.meta.env.VITE_AUTH0_AUDIENCE || '',
+  domain: getEnv('VITE_AUTH0_DOMAIN'),
+  clientId: getEnv('VITE_AUTH0_CLIENT_ID'),
+  audience: getEnv('VITE_AUTH0_AUDIENCE'),
   redirectUri: window.location.origin,
 };
 
