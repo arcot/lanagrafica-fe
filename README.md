@@ -15,19 +15,19 @@ A modern member management application built with React, TypeScript, and Vite. P
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Start development server (runs on localhost:3000)
-npm run dev
+pnpm dev
 
 # Run type checking
-npm run typecheck
+pnpm typecheck
 
 # Run linting
-npm run lint
+pnpm lint
 
 # Build for production
-npm run build
+pnpm build
 ```
 
 ## CI/CD Pipeline
@@ -167,7 +167,7 @@ release/v1.2.0
 
 3. **Install dependencies**
    ```bash
-   npm install
+   pnpm install
    ```
 
 4. **Make your changes**
@@ -178,9 +178,9 @@ release/v1.2.0
 
 5. **Test your changes**
    ```bash
-   npm run typecheck  # TypeScript type checking
-   npm run lint       # ESLint validation
-   npm run build      # Production build test
+   pnpm typecheck  # TypeScript type checking
+   pnpm lint       # ESLint validation
+   pnpm build      # Production build test
    ```
 
 6. **Commit with conventional commits**
@@ -199,7 +199,7 @@ release/v1.2.0
 
 - **TypeScript**: Strict mode enabled, no `any` types without justification
 - **ESLint**: Zero warnings policy (configured in `.eslintrc.cjs`)
-- **Code Style**: Use Prettier for formatting (`npm run format`)
+- **Code Style**: Use Prettier for formatting (`pnpm format`)
 - **Components**: Prefer functional components with hooks
 - **State**: Use TanStack Query for server state, React Context for UI state
 
