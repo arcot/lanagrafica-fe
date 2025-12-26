@@ -111,7 +111,7 @@ i18n
           },
           renewConfirm: {
             title: "Are you sure you want to renew",
-            description: "will be assigned new card number.",
+            description: "membership will be renewed for a year validity.",
             renew: "Renew",
             cancel: "Cancel",
           },
@@ -279,7 +279,7 @@ i18n
           },
           renewConfirm: {
             title: "Sei sicuro di voler rinnovare",
-            description: "verrà assegnato un nuovo numero di carta.",
+            description: "la tessera sarà rinnovata per un anno di validità.",
             renew: "Rinnova",
             cancel: "Annulla",
           },

@@ -56,7 +56,8 @@ export async function searchMember(
   debouncedSearch: string | null,
   pageNumber: number,
   _pageSize: number,
-  token: string
+  token: string,
+  filterStatus?: string
 ): Promise<Member[]> {
   if (debouncedSearch) {
     // Use search endpoint for text search
@@ -92,27 +93,22 @@ export async function searchMember(
     }
     return [] as Member[];
   } else {
-    // Use all members endpoint
-    const response = await restClient.get<ApiResponse<Member[]>>(
-      `/member/all/${pageNumber}`,
-      token
-    );
-
-    if (response.error) {
-      throw new Error(response.error);
+    // Use filter-specific endpoint based on filterStatus
+    // "expired" uses inactive endpoint - status will be calculated client-side by extendWithStatus
+    switch (filterStatus) {
+      case "active":
+        return getActiveMembers(pageNumber, token);
+      case "inactive":
+      case "expired":
+        return getInactiveMembers(pageNumber, token);
+      case "deleted":
+        return getDeletedMembers(pageNumber, token);
+      case "suspended":
+        return getSuspendedMembers(pageNumber, token);
+      case "all":
+      default:
+        return getAllMembers(pageNumber, token);
     }
-
-    // Handle both paginated (content) and direct array responses
-    if (Array.isArray(response)) {
-      return response as unknown as Member[];
-    }
-    if (response.content && Array.isArray(response.content)) {
-      return response.content as unknown as Member[];
-    }
-    if (response.data && Array.isArray(response.data)) {
-      return response.data as unknown as Member[];
-    }
-    return [] as Member[];
   }
 }
 
@@ -189,6 +185,29 @@ export async function getInactiveMembers(pageNumber: number, token: string): Pro
 export async function getDeletedMembers(pageNumber: number, token: string): Promise<Member[]> {
   const response = await restClient.get<ApiResponse<Member[]>>(
     `/member/deleted/${pageNumber}`,
+    token
+  );
+
+  if (response.error) {
+    throw new Error(response.error);
+  }
+
+  // Handle both paginated (content) and direct array responses
+  if (Array.isArray(response)) {
+    return response as unknown as Member[];
+  }
+  if (response.content && Array.isArray(response.content)) {
+    return response.content as unknown as Member[];
+  }
+  if (response.data && Array.isArray(response.data)) {
+    return response.data as unknown as Member[];
+  }
+  return [] as Member[];
+}
+
+export async function getSuspendedMembers(pageNumber: number, token: string): Promise<Member[]> {
+  const response = await restClient.get<ApiResponse<Member[]>>(
+    `/member/suspended-members/${pageNumber}`,
     token
   );
 

@@ -3,7 +3,6 @@ import {
   VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -60,23 +59,39 @@ export function MembersTable() {
         },
   );
 
-  // Query data
+  // Extract filter status from columnFilters
+  const filterStatus = columnFilters.length > 0 && columnFilters[0].value
+    ? (columnFilters[0].value as string)
+    : "all";
+
+  // Query data with filter status
   const { isPending, error, data, fetchNextPage, hasNextPage, refetch } =
-    useMembersQuery(debouncedSearch, membersPerPage);
+    useMembersQuery(debouncedSearch, membersPerPage, filterStatus);
 
   useEffect(() => {
     if (debouncedSearch !== null) refetch();
   }, [refetch, debouncedSearch]);
 
+  useEffect(() => {
+    refetch();
+  }, [refetch, filterStatus]);
+
   // Build table
   const columns = useMembersColumns();
   const rows = useMemo(() => {
-    return (
-      data?.pages.reduce((acc, page) => {
-        return [...acc, ...page];
-      }, []) ?? []
-    );
-  }, [data]);
+    const allRows = data?.pages.reduce((acc, page) => {
+      return [...acc, ...page];
+    }, []) ?? [];
+
+    // Only apply client-side filtering for "expired" status
+    // Backend handles all other filters (all, active, inactive, suspended, deleted)
+    if (filterStatus === "expired") {
+      return allRows.filter(row => row.status === "expired");
+    }
+
+    return allRows;
+  }, [data, filterStatus]);
+
   const table = useReactTable({
     state: {
       columnVisibility,
@@ -85,7 +100,7 @@ export function MembersTable() {
     columns,
     data: rows,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // Removed getFilteredRowModel - filtering now happens via API or in rows useMemo
     onColumnFiltersChange: setColumnFilters,
   });
 
