@@ -182,6 +182,25 @@ export function MembersTable() {
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
                         data-row="true"
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          // Prevent row click if clicking on buttons or interactive elements
+                          const target = e.target as HTMLElement;
+                          if (
+                            target.closest('button') ||
+                            target.closest('[role="button"]') ||
+                            target.closest('a')
+                          ) {
+                            return;
+                          }
+
+                          // Find the edit button (SquarePen icon) and click it
+                          const rowElement = e.currentTarget;
+                          const editButton = rowElement.querySelector('[data-edit-trigger="true"]');
+                          if (editButton instanceof HTMLElement) {
+                            editButton.click();
+                          }
+                        }}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>

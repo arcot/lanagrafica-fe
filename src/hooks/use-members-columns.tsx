@@ -4,12 +4,15 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { getCustomDate, hasExpired } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ActionButtons } from "@/components/ui/action-buttons";
+import { MemberDetails } from "@/components/ui/member-details";
+import { useMembersMutations } from "@/hooks/use-table-mutations";
 import { MemberExt } from "@/types/types";
 
 const columnHelper = createColumnHelper<MemberExt>();
 
 export function useMembersColumns() {
   const { t } = useTranslation();
+  const { updateMutation } = useMembersMutations();
 
   return useMemo(
     () => [
@@ -80,10 +83,18 @@ export function useMembersColumns() {
         id: "actions",
         header: () => <span className="ml-3">{t("membersTable.actions")}</span>,
         cell: (info) => {
-          return <ActionButtons row={info.row.original} />;
+          return (
+            <div className="flex">
+              <ActionButtons row={info.row.original} />
+              {/* Hidden edit trigger for row clicks */}
+              <MemberDetails row={info.row.original} updateMutation={updateMutation}>
+                <button data-edit-trigger="true" className="hidden" aria-hidden="true" />
+              </MemberDetails>
+            </div>
+          );
         },
       }),
     ],
-    [t],
+    [t, updateMutation],
   );
 }
