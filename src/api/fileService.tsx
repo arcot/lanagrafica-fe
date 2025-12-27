@@ -1,4 +1,3 @@
-import { restClient } from "./restClient";
 import { ApiResponse } from "@/types/types";
 import { apiConfig } from "@/lib/api-config";
 

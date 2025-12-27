@@ -52,7 +52,7 @@ export function AddMember({
   // Terms and signature workflow state
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
-  const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [_signatureData, setSignatureData] = useState<string | null>(null);
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
