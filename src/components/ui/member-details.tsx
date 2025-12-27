@@ -172,13 +172,7 @@ export function MemberDetails({
           </Tooltip>
         </TooltipProvider>
       )}
-      <SheetContent
-        className="overflow-y-scroll w-full"
-        onPointerDownOutside={(e) => {
-          // Prevent clicks outside from propagating to table rows
-          e.preventDefault();
-        }}
-      >
+      <SheetContent className="overflow-y-scroll w-full">
         <SheetHeader>
           <SheetTitle>
             <div className="flex gap-2">

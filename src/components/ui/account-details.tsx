@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "./button";
-import { Avatar } from "./avatar";
 import { Globe, LogOut, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
@@ -33,9 +32,7 @@ export function AccountDetails() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="p-1">
-          <Avatar email={user?.email} name={user?.name} />
-        </Button>
+        <Button variant="ghost">#{user?.email}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         onCloseAutoFocus={(e) => {

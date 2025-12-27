@@ -1,4 +1,4 @@
-import { MessageSquareText, RefreshCcw } from "lucide-react";
+import { MessageSquareText, RefreshCcw, SquarePen } from "lucide-react";
 import { Button } from "./button";
 import { MemberDetails } from "./member-details";
 import { RenewConfirm } from "./renew-confirm";
@@ -20,6 +20,12 @@ export function ActionButtons({ row }: ActionButtonsProps) {
 
   return (
     <div className="flex">
+      <MemberDetails row={row} updateMutation={updateMutation}>
+        <Button size="icon" variant="ghost">
+          <SquarePen className="w-5" />
+        </Button>
+      </MemberDetails>
+
       <RenewConfirm
         isOpenForbidden={isRenewForbidden}
         id={row.id}
