@@ -31,6 +31,7 @@ export interface ApiMemberInsert {
   docType?: string;
   docId?: string;
   country?: string;
+  signature?: string; // Base64 encoded PNG signature (without data:image/png;base64, prefix)
   // Note: cardNumber is auto-assigned by backend
   // Note: note and measure are only used in edit form, not add form
 }
