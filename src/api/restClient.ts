@@ -19,9 +19,7 @@ export class RestClient {
     token?: string
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    console.log(`🌐 [RestClient] Making ${options.method || 'GET'} request to:`, url);
-    console.log(`🔐 [RestClient] Token present:`, token ? 'YES' : 'NO');
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
