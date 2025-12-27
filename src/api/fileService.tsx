@@ -98,21 +98,17 @@ export async function openPDF(
   token: string,
   printMode = false
 ): Promise<void> {
-  try {
-    const pdfBlob = await fetchPDF(fileName, isGenericFile, token);
-    const pdfUrl = URL.createObjectURL(pdfBlob);
+  const pdfBlob = await fetchPDF(fileName, isGenericFile, token);
+  const pdfUrl = URL.createObjectURL(pdfBlob);
 
-    if (printMode) {
-      const pdfWindow = window.open(pdfUrl);
-      if (pdfWindow) {
-        pdfWindow.onload = () => {
-          pdfWindow.print();
-        };
-      }
-    } else {
-      window.open(pdfUrl);
+  if (printMode) {
+    const pdfWindow = window.open(pdfUrl);
+    if (pdfWindow) {
+      pdfWindow.onload = () => {
+        pdfWindow.print();
+      };
     }
-  } catch (error) {
-    throw error;
+  } else {
+    window.open(pdfUrl);
   }
 }

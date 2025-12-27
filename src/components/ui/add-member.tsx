@@ -52,7 +52,6 @@ export function AddMember({
   // Terms and signature workflow state
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
-  const [_signatureData, setSignatureData] = useState<string | null>(null);
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
@@ -123,14 +122,13 @@ export function AddMember({
   function handleSignatureSaved(signature: string) {
     // Save signature (strip the data:image/png;base64, prefix like legacy app does)
     const base64Signature = signature.replace(/^data:image\/png;base64,/, '');
-    setSignatureData(base64Signature);
     setShowSignaturePad(false);
     // Now actually submit the form with the signature
     submitMember(base64Signature);
   }
 
   function handleSignatureCleared() {
-    setSignatureData(null);
+    // Signature cleared - could be used for validation feedback in the future
   }
 
   async function submitMember(signature: string) {
@@ -158,7 +156,6 @@ export function AddMember({
     setYear("");
     setCountrySearch("");
     setCitySearch("");
-    setSignatureData(null);
     setShowTermsModal(false);
     setShowSignaturePad(false);
     form.reset();
